@@ -6,6 +6,7 @@ import Stripe from "stripe";
 import { useRouter } from "next/router";
 import { useMutation } from "react-query";
 import axios from "axios";
+import Head from "next/head";
 
 interface ProductProps {
     product: {
@@ -27,40 +28,40 @@ export default function Product({ product }: ProductProps) {
     }
 
     async function handleBuyProduct() {
-        try {
-            const response = await axios.post('/api/checkout', {
-                priceId: product.defaultPriceId
-            });
+        const response = await axios.post('/api/checkout', {
+            priceId: product.defaultPriceId
+        });
 
-            const { checkoutURL } = response.data;
+        const { checkoutURL } = response.data;
 
-            window.location.href = checkoutURL;
-        }
-        catch(err) {
-            alert('falha ao redirecionar ao checkout')
-        }
+        window.location.href = checkoutURL;
     }
 
     return (
-        <ProductContainer>
-            <ImageContainer>
-                <Image 
-                    src={product.imageUrl} 
-                    width={520} 
-                    height={480}
-                    alt=""
-                />
-            </ImageContainer>
+        <>
+            <Head>
+                <title>{product.name} | Ignite Shop</title>
+            </Head>
+            <ProductContainer>
+                <ImageContainer>
+                    <Image 
+                        src={product.imageUrl} 
+                        width={520} 
+                        height={480}
+                        alt=""
+                    />
+                </ImageContainer>
 
-            <ProductDetails>
-                <h1>{product.name}</h1>
-                <span>{product.price}</span>
+                <ProductDetails>
+                    <h1>{product.name}</h1>
+                    <span>{product.price}</span>
 
-                <p>{product.description}</p>
+                    <p>{product.description}</p>
 
-                <button disabled={isLoading} onClick={() => mutate()}>Comprar agora</button>
-            </ProductDetails>
-        </ProductContainer>
+                    <button disabled={isLoading} onClick={() => mutate()}>Comprar agora</button>
+                </ProductDetails>
+            </ProductContainer>
+        </>
     )
 }
 

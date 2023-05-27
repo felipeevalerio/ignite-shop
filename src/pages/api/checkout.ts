@@ -1,8 +1,12 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { stripe } from "../../lib/stripe";
 
+export interface CheckoutRequest {
+    priceId?: string;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { priceId } = req.body
+    const { priceId } = req.body as CheckoutRequest;
 
     if (req.method !== 'POST') {
         return res.status(405).json({error: 'Method not allowed'});
@@ -20,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 quantity: 1
             }
         ],
-        success_url: `${process.env.NEXT_URL}/success`,
+        success_url: `${process.env.NEXT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: process.env.NEXT_URL
     })
 
