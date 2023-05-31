@@ -1,17 +1,22 @@
-import Image from "next/image";
 import { QuantityNotification, ShoppingCartContainer } from "../styles/components/ShoppingCart";
-import shoppingCartImg from '../assets/shopping-cart.svg';
+import { useContext } from "react";
+import { ShoppingCartContext } from "../context/ShoppingCartContext";
+import { ShoppingCartColor, ShoppingCartIcon } from "../assets/ShoppingCartIcon";
 
 export function ShoppingCart() {
+    const { getProductQuantity } = useContext(ShoppingCartContext);
+    const { handleIsCartOpenVisibility } = useContext(ShoppingCartContext);
+
+    const quantity = getProductQuantity();
+
+    function openShoppingCart() {
+        handleIsCartOpenVisibility(true);
+    }
+
     return (
-        <ShoppingCartContainer>
-            <QuantityNotification hasItems>1</QuantityNotification>
-            <Image 
-                src={shoppingCartImg} 
-                alt="" 
-                width={24}
-                height={24}
-            />
+        <ShoppingCartContainer onClick={openShoppingCart}>
+            <QuantityNotification hasItems={!!quantity}>{quantity}</QuantityNotification>
+            <ShoppingCartIcon color={!quantity ? ShoppingCartColor.gray500 : ShoppingCartColor.gray300}/>
         </ShoppingCartContainer>
     );
 }

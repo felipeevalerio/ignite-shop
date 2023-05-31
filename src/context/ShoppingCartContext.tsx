@@ -1,15 +1,18 @@
 import { ReactNode, createContext, useState } from "react";
 
-interface CartProduct {
+export interface Product {
     id: string;
     name: string;
     imageUrl: string;
     price: number;
+    priceId: string;
 }
 
 interface ShoppingCartContextActions {
-    cart: CartProduct[];
-    addToCart: (product: CartProduct) => void;
+    cart: Product[];
+    isCartOpen: boolean;
+    handleIsCartOpenVisibility: (isOpen: boolean) => void; 
+    addToCart: (product: Product) => void;
     removeFromCart: (productId: string) => void;
     getProductQuantity: () => number;
     getTotalValue: () => number;
@@ -22,10 +25,15 @@ interface ShoppingCartProviderProps {
 }
 
 export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
-    const [cart, setCart] = useState<CartProduct[]>([]);
+    const [cart, setCart] = useState<Product[]>([]);
+    const [isCartOpen, setIsCartOpen] = useState(false);
     
-    function addToCart(product: CartProduct) {
-        setCart((state) => [...state, product]);
+    function addToCart(product: Product) {
+        const productAlreadyInCart = cart.find(p => p.id === product.id);
+        
+        if (!productAlreadyInCart) {
+            setCart((state) => [...state, product]);
+        }
     }
 
     function removeFromCart(productId: string) {
@@ -43,8 +51,22 @@ export function ShoppingCartProvider({ children }: ShoppingCartProviderProps) {
         }, 0);
     }
 
+    function handleIsCartOpenVisibility(isOpen: boolean) {
+        setIsCartOpen(isOpen);
+    }
+
+    const valueContext: ShoppingCartContextActions = {
+        addToCart,
+        handleIsCartOpenVisibility,
+        cart, 
+        isCartOpen,
+        removeFromCart, 
+        getProductQuantity, 
+        getTotalValue
+    }
+
     return (
-        <ShoppingCartContext.Provider value={{cart, addToCart, removeFromCart, getProductQuantity, getTotalValue}}>
+        <ShoppingCartContext.Provider value={valueContext}>
             {children}
         </ShoppingCartContext.Provider>   
     )

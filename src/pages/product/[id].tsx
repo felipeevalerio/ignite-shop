@@ -7,13 +7,17 @@ import { useRouter } from "next/router";
 import { useMutation } from "react-query";
 import axios from "axios";
 import Head from "next/head";
+import { ShoppingCartContext } from "../../context/ShoppingCartContext";
+import { useContext } from "react";
+import { formatPriceToBRL } from "../../utils/NumberUtils";
+import { Button } from "../../components/Button";
 
 interface ProductProps {
     product: {
         id: string;
         name: string;
         imageUrl: string;
-        price: string;
+        price: number;
         description: string;
         defaultPriceId: string;
     }
@@ -21,21 +25,25 @@ interface ProductProps {
 
 export default function Product({ product }: ProductProps) {
     const { isFallback } = useRouter();
-    const { mutate, isLoading } = useMutation(handleBuyProduct);
+
+
+    const { addToCart } = useContext(ShoppingCartContext);
 
     if (isFallback) {
         return <p>Loading...</p>
     }
 
-    async function handleBuyProduct() {
-        const response = await axios.post('/api/checkout', {
+    async function handleOpenCart() {
+        addToCart({
+            id: product.id,
+            imageUrl: product.imageUrl,
+            name: product.name,
+            price: product.price,
             priceId: product.defaultPriceId
         });
-
-        const { checkoutURL } = response.data;
-
-        window.location.href = checkoutURL;
     }
+
+    const formattedPrice = formatPriceToBRL(product.price)
 
     return (
         <>
@@ -54,11 +62,10 @@ export default function Product({ product }: ProductProps) {
 
                 <ProductDetails>
                     <h1>{product.name}</h1>
-                    <span>{product.price}</span>
+                    <span>{formattedPrice}</span>
 
                     <p>{product.description}</p>
-
-                    <button disabled={isLoading} onClick={() => mutate()}>Comprar agora</button>
+                    <Button onClick={handleOpenCart}>Comprar agora</Button>
                 </ProductDetails>
             </ProductContainer>
         </>
@@ -88,10 +95,7 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ para
                 name: product.name,
                 description: product.description,
                 imageUrl: product.images[0],
-                price: new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                }).format(price.unit_amount! / 100),
+                price: price.unit_amount / 100,
                 defaultPriceId: price.id
             }
         },
